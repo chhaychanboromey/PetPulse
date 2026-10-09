@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
-
 const JWT_SECRET = process.env.JWT_SECRET || 'petpulse_jwt_secret_key_2026';
 
 app.post('/api/v1/auth/login', async (req, res) => {
@@ -53,9 +52,9 @@ app.post('/api/v1/auth/login', async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Login failed: ' + error.message });
   }
 });
 
 const PORT = process.env.PORT || 8002;
-app.listen(PORT, () => console.log(`Login Service running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Login Microservice running on port ${PORT}`));

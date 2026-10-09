@@ -19,43 +19,58 @@ const petSchema = new mongoose.Schema({
 
 const Pet = mongoose.model('Pet', petSchema);
 
-// API 1: Register New Pet
+// Create Pet
 app.post('/api/v1/pets', async (req, res) => {
   try {
-    const ownerId = req.headers['x-user-id'] || req.body.ownerId;
+    const requesterId = req.headers['x-user-id'];
     const { name, species, breed, age, medicalHistory } = req.body;
 
-    const pet = await Pet.create({ name, species, breed, age, ownerId, medicalHistory });
+    if (!name || !species) {
+      return res.status(400).json({ success: false, message: 'Name and species are required' });
+    }
+
+    const pet = await Pet.create({ name, species, breed, age, ownerId: requesterId, medicalHistory });
     res.status(201).json({ success: true, pet });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// API 2: Get Pets by Owner
+// Get Pets by Owner (Prevents ID spoofing)
 app.get('/api/v1/pets/owner/:ownerId', async (req, res) => {
   try {
+    const requesterId = req.headers['x-user-id'];
+    const requesterRole = req.headers['x-user-role'];
+
+    if (requesterRole === 'owner' && requesterId !== req.params.ownerId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: Cannot access other users pets' });
+    }
+
     const pets = await Pet.find({ ownerId: req.params.ownerId });
     res.json({ success: true, pets });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// API 3: Update Medical Records
+// Update Medical Records
 app.put('/api/v1/pets/:id/medical-records', async (req, res) => {
   try {
     const { record } = req.body;
+    if (!record) return res.status(400).json({ success: false, message: 'Record entry required' });
+
     const pet = await Pet.findByIdAndUpdate(
       req.params.id,
       { $push: { medicalHistory: record } },
       { new: true }
     );
+
+    if (!pet) return res.status(404).json({ success: false, message: 'Pet record not found' });
     res.json({ success: true, pet });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(400).json({ success: false, message: 'Invalid ID format or operation failed' });
   }
 });
 
 const PORT = process.env.PORT || 8003;
-app.listen(PORT, () => console.log(`Pet Service running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Pet Profile Microservice running on port ${PORT}`));

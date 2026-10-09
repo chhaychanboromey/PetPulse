@@ -1,23 +1,13 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const dbConnect = require('./db-connect');
+const User = require('./User');
 
 const app = express();
 app.use(express.json());
 
 dbConnect();
-
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['owner', 'vet', 'admin', 'user'], default: 'owner' },
-  phone: { type: String, required: true, trim: true }
-}, { timestamps: true });
-
-const User = mongoose.model('User', userSchema);
 
 app.post('/api/v1/auth/register', async (req, res) => {
   try {
@@ -32,7 +22,10 @@ app.post('/api/v1/auth/register', async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const assignedRole = role ? role.toLowerCase().trim() : 'owner';
+    
+    // Restrict registration role (Admins must be created directly in DB)
+    const allowedRoles = ['owner', 'vet'];
+    const assignedRole = allowedRoles.includes(role?.toLowerCase().trim()) ? role.toLowerCase().trim() : 'owner';
 
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
@@ -68,9 +61,9 @@ app.post('/api/v1/auth/register', async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({ success: false, message: 'Email already exists' });
     }
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Registration failed: ' + error.message });
   }
 });
 
 const PORT = process.env.PORT || 8001;
-app.listen(PORT, () => console.log(`Registration Service running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Registration Microservice running on port ${PORT}`));
