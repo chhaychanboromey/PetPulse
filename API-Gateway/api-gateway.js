@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-const JWT_SECRET = process.env.JWT_SECRET || 'petpulse_jwt_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || '2d649a9ea4e6aed305c193a43f3ecde951b2872e45cd44c61bd6ab5bb0547636';
 
 const REGISTRATION_URL = process.env.REGISTRATION_URL || 'http://localhost:8001';
 const LOGIN_URL        = process.env.LOGIN_URL        || 'http://localhost:8002';

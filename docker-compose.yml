@@ -1,0 +1,78 @@
+services:
+  api-gateway:
+    build: ./API-Gateway
+    container_name: petpulse-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - JWT_SECRET=2d649a9ea4e6aed305c193a43f3ecde951b2872e45cd44c61bd6ab5bb0547636
+      - REGISTRATION_URL=http://registration:8001
+      - LOGIN_URL=http://login:8002
+      - PET_URL=http://pet-profile:8003
+      - APPOINTMENT_URL=http://appointment:8004
+      - PRESCRIPTION_URL=http://prescription:8005
+      - BILLING_URL=http://billing:8006
+    depends_on:
+      - registration
+      - login
+      - pet-profile
+      - appointment
+      - prescription
+      - billing
+
+  registration:
+    build: ./Registration
+    container_name: petpulse-registration
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - MONGO_URI=mongodb://2024475chhay_db_user:MeyPassword123@ac-9sxtwr1-shard-00-00.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-01.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-02.p7rv2wr.mongodb.net:27017/petpulse?ssl=true&replicaSet=atlas-hryulo-shard-0&authSource=admin&appName=Cluster0
+      - JWT_SECRET=2d649a9ea4e6aed305c193a43f3ecde951b2872e45cd44c61bd6ab5bb0547636
+
+  login:
+    build: ./Login
+    container_name: petpulse-login
+    ports:
+      - "8002:8002"
+    environment:
+      - PORT=8002
+      - MONGO_URI=mongodb://2024475chhay_db_user:MeyPassword123@ac-9sxtwr1-shard-00-00.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-01.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-02.p7rv2wr.mongodb.net:27017/petpulse?ssl=true&replicaSet=atlas-hryulo-shard-0&authSource=admin&appName=Cluster0
+      - JWT_SECRET=2d649a9ea4e6aed305c193a43f3ecde951b2872e45cd44c61bd6ab5bb0547636
+
+  pet-profile:
+    build: ./Pet_Profile
+    container_name: petpulse-pet-profile
+    ports:
+      - "8003:8003"
+    environment:
+      - PORT=8003
+      - MONGO_URI=mongodb://2024475chhay_db_user:MeyPassword123@ac-9sxtwr1-shard-00-00.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-01.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-02.p7rv2wr.mongodb.net:27017/petpulse?ssl=true&replicaSet=atlas-hryulo-shard-0&authSource=admin&appName=Cluster0
+
+  appointment:
+    build: ./Appointment
+    container_name: petpulse-appointment
+    ports:
+      - "8004:8004"
+    environment:
+      - PORT=8004
+      - MONGO_URI=mongodb://2024475chhay_db_user:MeyPassword123@ac-9sxtwr1-shard-00-00.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-01.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-02.p7rv2wr.mongodb.net:27017/petpulse?ssl=true&replicaSet=atlas-hryulo-shard-0&authSource=admin&appName=Cluster0
+
+  prescription:
+    build: ./Prescription
+    container_name: petpulse-prescription
+    ports:
+      - "8005:8005"
+    environment:
+      - PORT=8005
+      - MONGO_URI=mongodb://2024475chhay_db_user:MeyPassword123@ac-9sxtwr1-shard-00-00.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-01.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-02.p7rv2wr.mongodb.net:27017/petpulse?ssl=true&replicaSet=atlas-hryulo-shard-0&authSource=admin&appName=Cluster0
+
+  billing:
+    build: ./Billing
+    container_name: petpulse-billing
+    ports:
+      - "8006:8006"
+    environment:
+      - PORT=8006
+      - MONGO_URI=mongodb://2024475chhay_db_user:MeyPassword123@ac-9sxtwr1-shard-00-00.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-01.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-02.p7rv2wr.mongodb.net:27017/petpulse?ssl=true&replicaSet=atlas-hryulo-shard-0&authSource=admin&appName=Cluster0
