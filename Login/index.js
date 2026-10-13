@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
-const JWT_SECRET = process.env.JWT_SECRET || 'petpulse_jwt_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || '2d649a9ea4e6aed305c193a43f3ecde951b2872e45cd44c61bd6ab5bb0547636';
 
 app.post('/api/v1/auth/login', async (req, res) => {
   try {
