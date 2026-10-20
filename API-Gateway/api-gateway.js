@@ -9,12 +9,16 @@ const JWT_SECRET = process.env.JWT_SECRET || '2d649a9ea4e6aed305c193a43f3ecde951
 
 const REGISTRATION_URL = process.env.REGISTRATION_URL || 'http://localhost:8001';
 const LOGIN_URL        = process.env.LOGIN_URL        || 'http://localhost:8002';
-const PET_URL          = process.env.PET_URL          || 'http://localhost:8003';
 const APPOINTMENT_URL  = process.env.APPOINTMENT_URL  || 'http://localhost:8004';
 const PRESCRIPTION_URL = process.env.PRESCRIPTION_URL || 'http://localhost:8005';
 const BILLING_URL      = process.env.BILLING_URL      || 'http://localhost:8006';
 
-// Middleware: Gateway-Level Role Authorization
+const petTargets = [
+  process.env.PET_NODE_1 || 'http://pet-service-1:8003',
+  process.env.PET_NODE_2 || 'http://pet-service-2:8003'
+];
+let petTargetIndex = 0;
+
 const verifyRole = (allowedRoles = []) => {
   return (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -42,8 +46,8 @@ const verifyRole = (allowedRoles = []) => {
   };
 };
 
-// Preserves original path so downstream microservices receive full route (/api/v1/...)
 const passOriginalUrl = {
+  parseReqBody: false,
   proxyReqPathResolver: (req) => req.originalUrl,
   proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
     if (srcReq.user) {
@@ -54,16 +58,17 @@ const passOriginalUrl = {
   }
 };
 
-// --- PUBLIC AUTH ROUTES ---
 app.use('/api/v1/auth/register', proxy(REGISTRATION_URL, passOriginalUrl));
 app.use('/api/v1/auth/login', proxy(LOGIN_URL, passOriginalUrl));
 
-// --- PROTECTED ROUTES ---
-app.use('/api/v1/pets', verifyRole(['owner', 'vet', 'admin']), proxy(PET_URL, passOriginalUrl));
+app.use('/api/v1/pets', verifyRole(['owner', 'vet', 'admin']), (req, res, next) => {
+  const targetHost = petTargets[petTargetIndex];
+  petTargetIndex = (petTargetIndex + 1) % petTargets.length;
+  proxy(targetHost, passOriginalUrl)(req, res, next);
+});
+
 app.use('/api/v1/appointments', verifyRole(['owner', 'vet', 'admin']), proxy(APPOINTMENT_URL, passOriginalUrl));
 app.use('/api/v1/billing', verifyRole(['owner', 'vet', 'admin']), proxy(BILLING_URL, passOriginalUrl));
-
-// Prescriptions: All authenticated users can view; creation restricted via downstream role check
 app.use('/api/v1/prescriptions', verifyRole(['owner', 'vet', 'admin']), proxy(PRESCRIPTION_URL, passOriginalUrl));
 
 app.listen(PORT, () => console.log(`API Gateway running on port ${PORT}`));

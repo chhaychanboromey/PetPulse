@@ -1,4 +1,16 @@
 services:
+  nginx:
+    image: nginx:latest
+    container_name: petpulse-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - pet-service-1
+      - pet-service-2
+      - api-gateway
+
   api-gateway:
     build: ./API-Gateway
     container_name: petpulse-gateway
@@ -9,14 +21,16 @@ services:
       - JWT_SECRET=2d649a9ea4e6aed305c193a43f3ecde951b2872e45cd44c61bd6ab5bb0547636
       - REGISTRATION_URL=http://registration:8001
       - LOGIN_URL=http://login:8002
-      - PET_URL=http://pet-profile:8003
       - APPOINTMENT_URL=http://appointment:8004
       - PRESCRIPTION_URL=http://prescription:8005
       - BILLING_URL=http://billing:8006
+      - PET_NODE_1=http://pet-service-1:8003
+      - PET_NODE_2=http://pet-service-2:8003
     depends_on:
       - registration
       - login
-      - pet-profile
+      - pet-service-1
+      - pet-service-2
       - appointment
       - prescription
       - billing
@@ -41,13 +55,24 @@ services:
       - MONGO_URI=mongodb://2024475chhay_db_user:MeyPassword123@ac-9sxtwr1-shard-00-00.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-01.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-02.p7rv2wr.mongodb.net:27017/petpulse?ssl=true&replicaSet=atlas-hryulo-shard-0&authSource=admin&appName=Cluster0
       - JWT_SECRET=2d649a9ea4e6aed305c193a43f3ecde951b2872e45cd44c61bd6ab5bb0547636
 
-  pet-profile:
+  pet-service-1:
     build: ./Pet_Profile
-    container_name: petpulse-pet-profile
+    container_name: petpulse-pet-service-1
     ports:
       - "8003:8003"
     environment:
       - PORT=8003
+      - INSTANCE_ID=Pet-Service-Node-1
+      - MONGO_URI=mongodb://2024475chhay_db_user:MeyPassword123@ac-9sxtwr1-shard-00-00.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-01.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-02.p7rv2wr.mongodb.net:27017/petpulse?ssl=true&replicaSet=atlas-hryulo-shard-0&authSource=admin&appName=Cluster0
+
+  pet-service-2:
+    build: ./Pet_Profile
+    container_name: petpulse-pet-service-2
+    ports:
+      - "8007:8003"
+    environment:
+      - PORT=8003
+      - INSTANCE_ID=Pet-Service-Node-2
       - MONGO_URI=mongodb://2024475chhay_db_user:MeyPassword123@ac-9sxtwr1-shard-00-00.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-01.p7rv2wr.mongodb.net:27017,ac-9sxtwr1-shard-00-02.p7rv2wr.mongodb.net:27017/petpulse?ssl=true&replicaSet=atlas-hryulo-shard-0&authSource=admin&appName=Cluster0
 
   appointment:
