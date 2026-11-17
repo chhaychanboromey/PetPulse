@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petpulse-deployment
+  labels:
+    app: petpulse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petpulse
+  template:
+    metadata:
+      labels:
+        app: petpulse
+    spec:
+      containers:
+        # --- Pod 1 Container A: API Gateway ---
+        - name: apigateway
+          image: boromey/petpulse-api-gateway:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: LOGIN_URL
+              value: "http://127.0.0.1:8002"
+            - name: REGISTRATION_URL
+              value: "http://petpulse-registration-service:8001"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: JWT_SECRET
+
+        # --- Pod 1 Container B: Login Microservice ---
+        - name: login-service
+          image: boromey/petpulse-login:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8002
+          env:
+            - name: PORT
+              value: "8002"
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: JWT_SECRET
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petpulse-registration-deployment
+  labels:
+    app: petpulse-reg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petpulse-reg
+  template:
+    metadata:
+      labels:
+        app: petpulse-reg
+    spec:
+      containers:
+        # --- Pod 2: Registration Microservice ---
+        - name: registration-service
+          image: boromey/petpulse-registration:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8001
+          env:
+            - name: PORT
+              value: "8001"
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_URI

@@ -57,4 +57,4 @@ app.post('/api/v1/auth/login', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8002;
-app.listen(PORT, () => console.log(`Login Microservice running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Login Microservice running on port ${PORT}`));
